@@ -28,8 +28,10 @@ pub const ETH_ESTIMATE_GAS: &str = "eth_estimateGas";
 pub const ETH_GET_BLOCK_BY_HASH: &str = "eth_getBlockByHash";
 pub const ETH_GET_BLOCK_BY_NUMBER: &str = "eth_getBlockByNumber";
 pub const ETH_GET_TRANSACTION_BY_HASH: &str = "eth_getTransactionByHash";
-pub const ETH_GET_TRANSACTION_BY_BLOCK_HASH_AND_INDEX: &str = "eth_getTransactionByBlockHashAndIndex";
-pub const ETH_GET_TRANSACTION_BY_BLOCK_NUMBER_AND_INDEX: &str = "eth_getTransactionByBlockNumberAndIndex";
+pub const ETH_GET_TRANSACTION_BY_BLOCK_HASH_AND_INDEX: &str =
+    "eth_getTransactionByBlockHashAndIndex";
+pub const ETH_GET_TRANSACTION_BY_BLOCK_NUMBER_AND_INDEX: &str =
+    "eth_getTransactionByBlockNumberAndIndex";
 pub const ETH_GET_TRANSACTION_RECEIPT: &str = "eth_getTransactionReceipt";
 pub const ETH_GET_UNCLE_BY_BLOCK_HASH_AND_INDEX: &str = "eth_getUncleByBlockHashAndIndex";
 pub const ETH_GET_UNCLE_BY_BLOCK_NUMBER_AND_INDEX: &str = "eth_getUncleByBlockNumberAndIndex";
