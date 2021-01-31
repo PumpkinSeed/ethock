@@ -30,9 +30,7 @@ impl Entry {
     }
 
     pub fn serve_silent(self) {
-        thread::spawn(move || {
-            self.serve()
-        });
+        thread::spawn(move || self.serve());
     }
 
     pub fn serve(self) {
