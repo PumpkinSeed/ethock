@@ -1,0 +1,16 @@
+[package]
+name = "ethock"
+version = "0.1.0"
+authors = ["PumpkinSeed <qwer.kocka@gmail.com>"]
+edition = "2018"
+
+[lib]
+name = "ethock_lib"
+path = "src/lib.rs"
+
+[[bin]]
+name = "ethock"
+path = "src/bin.rs"
+
+[dependencies]
+rouille = "3.0.0"
