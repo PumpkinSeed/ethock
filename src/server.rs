@@ -1,10 +1,12 @@
+use serde::{Deserialize};
 use crate::methods;
 
+#[derive(Deserialize, Debug)]
 pub struct PayloadWrapper {
     jsonrpc: String,
     method: String,
     params: Vec<String>,
-    id: String,
+    id: i64,
 }
 
 pub struct Entry {
@@ -21,7 +23,14 @@ impl Entry {
     pub fn serve(self) {
         rouille::start_server(self.addr, move |request| {
             router!(request,
-            (GET) (/) => {
+            (POST) (/) => {
+
+                let payload: Result<PayloadWrapper,  rouille::input::json::JsonError> = rouille::input::json_input(request);
+                match payload {
+                    Ok(data) => println!("{:?}", data),
+                    Err(err) => println!("{:?}", err),
+                }
+
                 rouille::Response::text("hello world")
             },
 
