@@ -1,5 +1,6 @@
 use crate::methods;
 use serde::Deserialize;
+use std::thread;
 
 #[derive(Deserialize, Debug)]
 pub struct PayloadWrapper {
@@ -26,6 +27,12 @@ impl Entry {
         Entry {
             addr: String::from(addr),
         }
+    }
+
+    pub fn serve_silent(self) {
+        thread::spawn(move || {
+            self.serve()
+        });
     }
 
     pub fn serve(self) {
