@@ -1,8 +1,15 @@
 [package]
 name = "ethock"
-version = "0.0.2"
+version = "0.0.3"
 authors = ["PumpkinSeed <qwer.kocka@gmail.com>"]
 edition = "2018"
+license = "MIT OR Apache-2.0"
+readme = "README.md"
+repository = "https://github.com/PumpkinSeed/ethock"
+description = """
+Lightweight Ethereum JSON RPC Mock written in Rust
+"""
+keywords = ["ethereum", "mock", "json", "rpc"]
 
 [lib]
 name = "ethock_lib"
