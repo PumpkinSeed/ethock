@@ -1,6 +1,6 @@
 [package]
 name = "ethock"
-version = "0.0.3"
+version = "0.1.0"
 authors = ["PumpkinSeed <qwer.kocka@gmail.com>"]
 edition = "2018"
 license = "MIT OR Apache-2.0"
@@ -20,5 +20,8 @@ name = "ethock"
 path = "src/bin.rs"
 
 [dependencies]
-rouille = "3.0.0"
-serde = { version = "1.0", features = ["derive"] }
+jsonrpc-http-server = "17.0.0"
+jsonrpc-core = "17.0.0"
+
+[dev-dependencies]
+reqwest = { version = "0.11.0", features = ["blocking", "json"] }
