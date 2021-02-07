@@ -4,17 +4,17 @@ use jsonrpc_http_server::jsonrpc_core::{IoHandler, Value, Params};
 use jsonrpc_http_server::{ServerBuilder, RequestMiddleware, RequestMiddlewareAction};
 use log::{info, debug, LevelFilter};
 use jsonrpc_http_server::hyper::{Request, Body};
+use env_logger::{Builder, Target};
+use std::borrow::Borrow;
 
 pub struct Entry {
     addr: String,
-    log_level: LevelFilter,
 }
 
 impl Clone for Entry {
     fn clone(&self) -> Entry {
         Entry {
             addr: self.addr.clone(),
-            log_level: self.log_level.clone(),
         }
     }
 }
@@ -29,11 +29,14 @@ impl Entry {
             "trace" => LevelFilter::Trace,
             _ => LevelFilter::Off,
         };
-        log::set_max_level(log_level);
+
+        Builder::new()
+            .filter_level(log_level)
+            .target(Target::Stdout)
+            .init();
 
         Entry {
             addr: String::from(addr),
-            log_level,
         }
     }
 
@@ -549,8 +552,10 @@ struct LoggerMiddleware {}
 
 impl RequestMiddleware for LoggerMiddleware {
     fn on_request(&self, request: Request<Body>) -> RequestMiddlewareAction {
-        log::set_max_level(LevelFilter::Debug);
-        info!("incoming request: {}", request.method().to_string());
+        //log::set_max_level(LevelFilter::Debug);
+        let f = request.body();
+
+        info!("incoming request: {:?}", request.into_body());
         RequestMiddlewareAction::Proceed{ should_continue_on_invalid_cors: true, request }
     }
 }
@@ -562,7 +567,7 @@ mod tests {
 
     #[test]
     fn test_web3_client_version() {
-        Entry::new("127.0.0.1:8545", "debug").serve_silent();
+        Entry::new("127.0.0.1:8545", "info").serve_silent();
 
         let mut map = HashMap::new();
         map.insert("jsonrpc", "2.0");
