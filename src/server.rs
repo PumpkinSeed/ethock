@@ -1,24 +1,39 @@
 use crate::methods;
 use std::thread;
 use jsonrpc_http_server::jsonrpc_core::{IoHandler, Value, Params};
-use jsonrpc_http_server::ServerBuilder;
+use jsonrpc_http_server::{ServerBuilder, RequestMiddleware, RequestMiddlewareAction};
+use log::{info, debug, LevelFilter};
+use jsonrpc_http_server::hyper::{Request, Body};
 
 pub struct Entry {
     addr: String,
+    log_level: LevelFilter,
 }
 
 impl Clone for Entry {
     fn clone(&self) -> Entry {
         Entry {
             addr: self.addr.clone(),
+            log_level: self.log_level.clone(),
         }
     }
 }
 
 impl Entry {
-    pub fn new(addr: &str) -> Self {
+    pub fn new(addr: &str, log_level: &str) -> Self {
+        let log_level: LevelFilter = match log_level {
+            "error" => LevelFilter::Error,
+            "warn" => LevelFilter::Warn,
+            "info" => LevelFilter::Info,
+            "debug" => LevelFilter::Debug,
+            "trace" => LevelFilter::Trace,
+            _ => LevelFilter::Off,
+        };
+        log::set_max_level(log_level);
+
         Entry {
             addr: String::from(addr),
+            log_level,
         }
     }
 
@@ -29,6 +44,7 @@ impl Entry {
     pub fn serve(self) {
         let server = ServerBuilder::new(self.setup_methods())
             .threads(3)
+            .request_middleware(LoggerMiddleware{})
             .start_http(&self.addr.parse().unwrap())
             .unwrap();
 
@@ -529,6 +545,16 @@ impl Entry {
     }
 }
 
+struct LoggerMiddleware {}
+
+impl RequestMiddleware for LoggerMiddleware {
+    fn on_request(&self, request: Request<Body>) -> RequestMiddlewareAction {
+        log::set_max_level(LevelFilter::Debug);
+        info!("incoming request: {}", request.method().to_string());
+        RequestMiddlewareAction::Proceed{ should_continue_on_invalid_cors: true, request }
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -536,7 +562,7 @@ mod tests {
 
     #[test]
     fn test_web3_client_version() {
-        Entry::new("127.0.0.1:8545").serve_silent();
+        Entry::new("127.0.0.1:8545", "debug").serve_silent();
 
         let mut map = HashMap::new();
         map.insert("jsonrpc", "2.0");

@@ -6,5 +6,5 @@ fn main() {
     if args.len() > 1 {
         addr = &args[1][..];
     }
-    server::Entry::new(addr).serve();
+    server::Entry::new(addr, "debug").serve();
 }
