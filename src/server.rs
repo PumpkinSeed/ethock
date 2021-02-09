@@ -2,10 +2,9 @@ use crate::methods;
 use std::thread;
 use jsonrpc_http_server::jsonrpc_core::{IoHandler, Value, Params};
 use jsonrpc_http_server::{ServerBuilder, RequestMiddleware, RequestMiddlewareAction};
-use log::{info, debug, LevelFilter};
+use log::{info, LevelFilter};
 use jsonrpc_http_server::hyper::{Request, Body};
 use env_logger::{Builder, Target};
-use std::borrow::Borrow;
 
 pub struct Entry {
     addr: String,
@@ -548,15 +547,12 @@ impl Entry {
     }
 }
 
-struct LoggerMiddleware {}
+struct LoggerMiddleware{}
 
 impl RequestMiddleware for LoggerMiddleware {
     fn on_request(&self, request: Request<Body>) -> RequestMiddlewareAction {
-        //log::set_max_level(LevelFilter::Debug);
-        let f = request.body();
-
-        info!("incoming request: {:?}", request.into_body());
-        RequestMiddlewareAction::Proceed{ should_continue_on_invalid_cors: true, request }
+        info!("Incoming {:?}", request);
+        RequestMiddlewareAction::Proceed { should_continue_on_invalid_cors: false, request }
     }
 }
 
