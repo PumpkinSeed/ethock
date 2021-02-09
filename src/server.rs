@@ -1,7 +1,10 @@
 use crate::methods;
 use std::thread;
 use jsonrpc_http_server::jsonrpc_core::{IoHandler, Value, Params};
-use jsonrpc_http_server::ServerBuilder;
+use jsonrpc_http_server::{ServerBuilder, RequestMiddleware, RequestMiddlewareAction};
+use log::{info, LevelFilter};
+use jsonrpc_http_server::hyper::{Request, Body};
+use env_logger::{Builder, Target};
 
 pub struct Entry {
     addr: String,
@@ -16,7 +19,21 @@ impl Clone for Entry {
 }
 
 impl Entry {
-    pub fn new(addr: &str) -> Self {
+    pub fn new(addr: &str, log_level: &str) -> Self {
+        let log_level: LevelFilter = match log_level {
+            "error" => LevelFilter::Error,
+            "warn" => LevelFilter::Warn,
+            "info" => LevelFilter::Info,
+            "debug" => LevelFilter::Debug,
+            "trace" => LevelFilter::Trace,
+            _ => LevelFilter::Off,
+        };
+
+        Builder::new()
+            .filter_level(log_level)
+            .target(Target::Stdout)
+            .init();
+
         Entry {
             addr: String::from(addr),
         }
@@ -29,6 +46,7 @@ impl Entry {
     pub fn serve(self) {
         let server = ServerBuilder::new(self.setup_methods())
             .threads(3)
+            .request_middleware(LoggerMiddleware{})
             .start_http(&self.addr.parse().unwrap())
             .unwrap();
 
@@ -529,6 +547,15 @@ impl Entry {
     }
 }
 
+struct LoggerMiddleware{}
+
+impl RequestMiddleware for LoggerMiddleware {
+    fn on_request(&self, request: Request<Body>) -> RequestMiddlewareAction {
+        info!("Incoming {:?}", request);
+        RequestMiddlewareAction::Proceed { should_continue_on_invalid_cors: false, request }
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -536,7 +563,7 @@ mod tests {
 
     #[test]
     fn test_web3_client_version() {
-        Entry::new("127.0.0.1:8545").serve_silent();
+        Entry::new("127.0.0.1:8545", "info").serve_silent();
 
         let mut map = HashMap::new();
         map.insert("jsonrpc", "2.0");
