@@ -1,10 +1,11 @@
 use crate::methods;
 use std::thread;
-use jsonrpc_http_server::jsonrpc_core::{IoHandler, Value, Params};
+use jsonrpc_http_server::jsonrpc_core::{IoHandler, Value, Params, futures};
 use jsonrpc_http_server::{ServerBuilder, RequestMiddleware, RequestMiddlewareAction};
 use log::{info, LevelFilter};
 use jsonrpc_http_server::hyper::{Request, Body};
 use env_logger::{Builder, Target};
+use jsonrpc_http_server::jsonrpc_core::futures::StreamExt;
 
 pub struct Entry {
     addr: String,
@@ -551,9 +552,16 @@ struct LoggerMiddleware{}
 
 impl RequestMiddleware for LoggerMiddleware {
     fn on_request(&self, request: Request<Body>) -> RequestMiddlewareAction {
-        info!("Incoming {:?}", request);
+        let body = request.body();
+        let res = futures::executor::block_on(p(body.clone()));
+        info!("Incoming {:?}", res);
         RequestMiddlewareAction::Proceed { should_continue_on_invalid_cors: false, request }
     }
+}
+
+async fn p(body: &Body) -> String {
+    hyper::body::to_bytes(body);
+    "done computing".to_string()
 }
 
 #[cfg(test)]
