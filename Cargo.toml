@@ -24,8 +24,8 @@ jsonrpc-http-server = "17.0.0"
 jsonrpc-core = "17.0.0"
 log = "0.4"
 env_logger = "0.8.2"
-tokio = "1.2.0"
-hyper = "0.14.4"
+tokio = { version = "0.2.25", features = ["rt-threaded", "blocking"] }
+hyper = "0.13"
 
 [dev-dependencies]
 reqwest = { version = "0.11.0", features = ["blocking", "json"] }

@@ -6,6 +6,10 @@ use log::{info, LevelFilter};
 use jsonrpc_http_server::hyper::{Request, Body};
 use env_logger::{Builder, Target};
 use jsonrpc_http_server::jsonrpc_core::futures::StreamExt;
+use std::borrow::{BorrowMut, Borrow};
+use hyper::body::Bytes;
+use jsonrpc_http_server::tokio::macros::support::Future;
+use hyper::Error;
 
 pub struct Entry {
     addr: String,
@@ -551,16 +555,40 @@ impl Entry {
 struct LoggerMiddleware{}
 
 impl RequestMiddleware for LoggerMiddleware {
-    fn on_request(&self, request: Request<Body>) -> RequestMiddlewareAction {
-        let body = request.body();
-        let res = futures::executor::block_on(p(body.clone()));
+    fn on_request(&self, mut request: Request<Body>) -> RequestMiddlewareAction {
+        println!("---------- 11");
+        let body = request.body_mut();
+        println!("---------- 12");
+        let mut main_runtime = tokio::runtime::Runtime::new().unwrap();
+
+        let res = main_runtime.block_on(main_runtime.spawn(async move {
+            match hyper::body::to_bytes(body).await {
+                Ok(data) => {println!("test: {:?}", data)}
+                Err(err) =>{println!("error: {:?}", err)}
+            };
+            "done computing".to_string()
+        })).unwrap();
+        // let res = tokio::task::block_in_place(tokio::task::spawn_blocking(async move || {
+        //     match hyper::body::to_bytes(body).await {
+        //         Ok(data) => {println!("test: {:?}", data)}
+        //         Err(err) =>{println!("error: {:?}", err)}
+        //     };
+        //     "done computing".to_string()
+        // }));
+        println!("---------- 13");
         info!("Incoming {:?}", res);
+        println!("---------- 14");
         RequestMiddlewareAction::Proceed { should_continue_on_invalid_cors: false, request }
     }
 }
 
-async fn p(body: &Body) -> String {
-    hyper::body::to_bytes(body);
+async fn p(body: &mut Body) -> String {
+    println!("---------- 21");
+    // match hyper::body::to_bytes(body).await {
+    //     Ok(data) => {println!("test: {:?}", data)}
+    //     Err(err) =>{println!("error: {:?}", err)}
+    // };
+    println!("---------- 22");
     "done computing".to_string()
 }
 
